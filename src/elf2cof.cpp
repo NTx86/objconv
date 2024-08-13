@@ -50,7 +50,7 @@ template <class TELF_Header, class TELF_SectionHeader, class TELF_Symbol, class 
 void CELF2COF<ELFSTRUCTURES>::MakeFileHeader() {
    
    // Make PE file header
-   NewFileHeader.Machine = (this->WordSize == 32) ? PE_MACHINE_I386 : PE_MACHINE_X8664;
+   NewFileHeader.Machine = PE_MACHINE_PPC; //(this->WordSize == 32) ? PE_MACHINE_I386 : PE_MACHINE_X8664;
    NewFileHeader.TimeDateStamp = (uint32)time(0);
    NewFileHeader.SizeOfOptionalHeader = 0;
    NewFileHeader.Flags = 0;
@@ -244,9 +244,10 @@ void CELF2COF<ELFSTRUCTURES>::MakeSections() {
                   }
 
                   // Get relocation type and fix addend
-                  if (this->WordSize == 32) {
+                  //if (this->WordSize == 32) {
+					  printf("\nreloc type: %u", OldRelocation.r_type);
                      switch(OldRelocation.r_type) {
-                     case R_386_NONE:    // Ignored
+                     /*case R_386_NONE:    // Ignored
                         NewRelocation.Type = COFF32_RELOC_ABS;  break;
 
                      case R_386_IRELATIVE:
@@ -278,75 +279,35 @@ void CELF2COF<ELFSTRUCTURES>::MakeSections() {
                         NewRelocation.Type = 0;
                         break;
 
-                     case R_386_RELATIVE:  // adjust by program base
+                     case R_386_RELATIVE:  // adjust by program base*/
+					 case R_PPC_ADDR32:
+						 NewRelocation.Type = IMAGE_REL_PPC_ADDR32;
+						 *piaddend += uint32(OldRelocation.r_addend); 
+						 break;
+					 case R_PPC_ADDR16:
+						 NewRelocation.Type = IMAGE_REL_PPC_ADDR16;
+						 //*piaddend += uint32(OldRelocation.r_addend); 
+						 break;
+					 /*case R_PPC_REL24:
+                        *piaddend &= 0xF8000003;
+						//*piaddend |= 0x3FFFFEC;
+                        NewRelocation.Type = IMAGE_REL_PPC_REL24;
+						break;
+					 case R_PPC_ADDR16_LO:
+						*piaddend += uint32(OldRelocation.r_addend);
+                        NewRelocation.Type = IMAGE_REL_PPC_REFLO;
+						break;
+					 case R_PPC_ADDR16_HA:
+						*piaddend += uint32(OldRelocation.r_addend);
+                        NewRelocation.Type = IMAGE_REL_PPC_REFHI;
+						break;*/
                      default:              // Unknown or unsupported relocation method
                         err.submit(2030, OldRelocation.r_type); 
-                        err.ClearError(2030); // report this error only once
+                        //err.ClearError(2030); // report this error only once
                         NewRelocation.Type = 0; 
                         break;
                      }
-                  }
-                  else { // WordSize == 64
-                     switch(OldRelocation.r_type) {
-                     case R_X86_64_NONE:     // Ignored
-                        NewRelocation.Type = COFF64_RELOC_ABS;  
-                        break;
-
-                     case R_X86_64_64:      // 64 bit absolute virtual addres
-                        NewRelocation.Type = COFF64_RELOC_ABS64;  
-                        *(int64*)piaddend += OldRelocation.r_addend;  
-                        break;
-
-                     case R_X86_64_IRELATIVE:
-                        err.submit(1063); // Warning: Gnu indirect function cannot be converted
-                        // continue in next case?:
-                     case R_X86_64_32S:     // 32 bit absolute virtual address, sign extended
-                     case R_X86_64_32:      // 32 bit absolute virtual address, zero extended
-                        NewRelocation.Type = COFF64_RELOC_ABS32;  
-                        *piaddend += uint32(OldRelocation.r_addend);  
-                        break;
-
-                     case R_X86_64_PC32:    // 32 bit, self-relative
-                        // See COFF2ELF.cpp for an explanation of the difference between
-                        // COFF and ELF relative relocation methods
-                        *piaddend += uint32(OldRelocation.r_addend);
-                        if (*piaddend >= -8 && *piaddend <= -4) {
-                           NewRelocation.Type = (uint16)(COFF64_RELOC_REL32 - *piaddend - 4);  
-                           *piaddend = 0;
-                        }
-                        else {
-                           NewRelocation.Type = COFF64_RELOC_REL32;
-                           *piaddend += 4;
-                        }
-                        break;
-
-                     case R_X86_64_RELATIVE:  // Adjust by program base
-                        err.submit(2030, OldRelocation.r_type); 
-                        err.ClearError(2030); // report this error only once
-                        NewRelocation.Type = 0;
-                        break;
-
-                     case R_X86_64_GOT32: case R_X86_64_GLOB_DAT: case R_X86_64_GOTPCREL:
-                        // Global offset table
-                        err.submit(2042);     // cannot convert position-independent code
-                        err.ClearError(2042); // report this error only once
-                        NewRelocation.Type = 0;
-                        break;
-
-                     case R_X86_64_PLT32: case R_X86_64_JUMP_SLOT: 
-                        // procedure linkage table
-                        err.submit(2042);     // cannot convert import table
-                        err.ClearError(2043); // report this error only once
-                        NewRelocation.Type = 0;
-                        break;
-
-                     default:              // Unknown or unsupported relocation method
-                        err.submit(2030, OldRelocation.r_type); 
-                        err.ClearError(2030); // report this error only once
-                        NewRelocation.Type = 0; 
-                        break;
-                     }
-                  }
+                  //}
 
                   // Store relocation entry
                   NewRawData.Push(&NewRelocation, SIZE_SCOFF_Relocation);

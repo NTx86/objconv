@@ -38,7 +38,8 @@ struct SCOFF_FileHeader {
 
 // Values of Machine:
 #define PE_MACHINE_I386       0x14c
-#define PE_MACHINE_X8664     0x8664
+#define PE_MACHINE_X8664      0x8664
+#define PE_MACHINE_PPC        0x1f0
 
 // Bits for Flags:
 #define PE_F_RELFLG 0x0001   // relocation info stripped from file
@@ -491,6 +492,47 @@ struct SCOFF_Relocation {
 #define COFF32_RELOC_SECREL7     0x0D   // 7-bit section-relative
 #define COFF32_RELOC_TOKEN       0x0C   // CLR token
 #define COFF32_RELOC_REL32       0x14   // 32-bit EIP-relative
+
+/* NOP */
+#define IMAGE_REL_PPC_ABSOLUTE          0x0000
+/* 64-bit address */
+#define IMAGE_REL_PPC_ADDR64            0x0001
+/* 32-bit address */
+#define IMAGE_REL_PPC_ADDR32            0x0002
+/* 26-bit address, shifted left 2 (branch absolute) */
+#define IMAGE_REL_PPC_ADDR24            0x0003
+/* 16-bit address */
+#define IMAGE_REL_PPC_ADDR16            0x0004
+/* 16-bit address, shifted left 2 (load doubleword) */
+#define IMAGE_REL_PPC_ADDR14            0x0005
+/* 26-bit PC-relative offset, shifted left 2 (branch relative) */
+#define IMAGE_REL_PPC_REL24             0x0006
+/* 16-bit PC-relative offset, shifted left 2 (br cond relative) */
+#define IMAGE_REL_PPC_REL14             0x0007
+/* 16-bit offset from TOC base */
+#define IMAGE_REL_PPC_TOCREL16          0x0008
+/* 16-bit offset from TOC base, shifted left 2 (load doubleword) */
+#define IMAGE_REL_PPC_TOCREL14          0x0009
+/* 32-bit addr w/o image base */
+#define IMAGE_REL_PPC_ADDR32NB          0x000A
+/* va of containing section (as in an image sectionhdr) */
+#define IMAGE_REL_PPC_SECREL            0x000B
+/* sectionheader number */
+#define IMAGE_REL_PPC_SECTION           0x000C
+/* substitute TOC restore instruction iff symbol is glue code */
+#define IMAGE_REL_PPC_IFGLUE            0x000D
+/* symbol is glue code; virtual address is TOC restore instruction */
+#define IMAGE_REL_PPC_IMGLUE            0x000E
+/* va of containing section (limited to 16 bits) */
+#define IMAGE_REL_PPC_SECREL16          0x000F
+/* Stuff to handle immediate data when the number of bits in the
+   data is greater than the number of bits in the immediate field
+   We need to do (usually) 32 bit arithmetic on 16 bit chunks.  */
+#define IMAGE_REL_PPC_REFHI             0x0010
+#define IMAGE_REL_PPC_REFLO             0x0011
+#define IMAGE_REL_PPC_PAIR              0x0012
+/* This is essentially the same as tocrel16, with TOCDEFN assumed.  */
+#define IMAGE_REL_PPC_TOCREL16_DEFN     0x0013
 
 /********************** Relocation types for 64-bit COFF **********************/
 // Note: These values are obtained by my own testing.
