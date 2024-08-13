@@ -247,60 +247,14 @@ void CELF2COF<ELFSTRUCTURES>::MakeSections() {
                   //if (this->WordSize == 32) {
 					  printf("\nreloc type: %u", OldRelocation.r_type);
                      switch(OldRelocation.r_type) {
-                     /*case R_386_NONE:    // Ignored
-                        NewRelocation.Type = COFF32_RELOC_ABS;  break;
-
-                     case R_386_IRELATIVE:
-                        err.submit(1063); // Warning: Gnu indirect function cannot be converted
-                        // continue in next case?:
-                     case R_386_32:      // 32-bit absolute virtual address
-                        NewRelocation.Type = COFF32_RELOC_DIR32;  
-                        *piaddend += uint32(OldRelocation.r_addend);  
-                        break;
-
-                     case R_386_PC32:   // 32-bit self-relative
-                        NewRelocation.Type = COFF32_RELOC_REL32;  
-                        // Difference between EIP-relative and self-relative relocation = size of address field
-                        // Adjust inline addend for different relocation method:
-                        *piaddend += 4 + uint32(OldRelocation.r_addend);
-                        break;
-
-                     case R_386_GOT32: case R_386_GLOB_DAT: case R_386_GOTOFF: case R_386_GOTPC:
-                        // Global offset table
-                        err.submit(2042);     // cannot convert position-independent code
-                        err.ClearError(2042); // report this error only once
-                        NewRelocation.Type = 0;
-                        break;
-
-                     case R_386_PLT32: case R_386_JMP_SLOT: 
-                        // procedure linkage table
-                        err.submit(2043);     // cannot convert import table
-                        err.ClearError(2043); // report this error only once
-                        NewRelocation.Type = 0;
-                        break;
-
-                     case R_386_RELATIVE:  // adjust by program base*/
 					 case R_PPC_ADDR32:
 						 NewRelocation.Type = IMAGE_REL_PPC_ADDR32;
 						 *piaddend += uint32(OldRelocation.r_addend); 
 						 break;
-					 case R_PPC_ADDR16:
+					 case R_PPC_ADDR16: //untested
 						 NewRelocation.Type = IMAGE_REL_PPC_ADDR16;
 						 //*piaddend += uint32(OldRelocation.r_addend); 
 						 break;
-					 /*case R_PPC_REL24:
-                        *piaddend &= 0xF8000003;
-						//*piaddend |= 0x3FFFFEC;
-                        NewRelocation.Type = IMAGE_REL_PPC_REL24;
-						break;
-					 case R_PPC_ADDR16_LO:
-						*piaddend += uint32(OldRelocation.r_addend);
-                        NewRelocation.Type = IMAGE_REL_PPC_REFLO;
-						break;
-					 case R_PPC_ADDR16_HA:
-						*piaddend += uint32(OldRelocation.r_addend);
-                        NewRelocation.Type = IMAGE_REL_PPC_REFHI;
-						break;*/
                      default:              // Unknown or unsupported relocation method
                         err.submit(2030, OldRelocation.r_type); 
                         //err.ClearError(2030); // report this error only once
